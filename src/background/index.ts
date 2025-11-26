@@ -27,8 +27,6 @@ browser.runtime.onMessage.addListener(async (message) => {
       myHeaders.append('Content-Type', 'application/json')
       myHeaders.append('Accept', '*/*')
       myHeaders.append('Connection', 'keep-alive')
-
-      const mdValue = `![](${message.link})`
       const raw = JSON.stringify({
         message: {
           from: {
@@ -39,7 +37,8 @@ browser.runtime.onMessage.addListener(async (message) => {
             id: 6976780218,
             type: 'private',
           },
-          text: mdValue,
+          text: '',
+          imgUrl: message.link,
         },
       })
 
