@@ -33,6 +33,7 @@ export async function getManifest() {
     ],
     host_permissions: [
       'https://*.bilibili.com/*',
+      'https://note.gjqqq.com/*',
     ],
     content_scripts: [
       {

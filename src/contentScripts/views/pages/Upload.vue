@@ -1,9 +1,9 @@
 <script setup>
 import Idb from 'idb-js'
 import uuid from 'uuidjs'
-import { Button, Link, Message, Radio, RadioGroup, Tag, TypographyParagraph, Upload } from '@arco-design/web-vue'
+import {Button, Link, Message, Radio, RadioGroup, Tag, TypographyParagraph, Upload} from '@arco-design/web-vue'
 import db_img_config from '../db_img_config'
-import { copyText, getImgSize, getPasteImg } from '~/utils'
+import {copyText, getImgSize, getPasteImg} from '~/utils'
 
 const homePage = 'https://bilibili.com'
 const loginUrl = 'https://passport.bilibili.com/login'
@@ -50,6 +50,28 @@ const uploadSuccess = async (FileItem) => {
   const res = FileItem.response
   if (res.data?.location) {
     const link = getResponseImgUrlHttps(res)
+
+    // 通过 background script 发送请求以避免 CORS 问题
+    async function pushToMyNotes(link) {
+      try {
+        const response = await browser.runtime.sendMessage({
+          type: 'PUSH_TO_MY_NOTES',
+          link,
+        })
+
+        if (!response.success) {
+          throw new Error(response.error)
+        }
+
+        return response.result
+      }
+      catch (error) {
+        console.error('pushToMyNotes error:', error)
+        throw error
+      }
+    }
+
+    await pushToMyNotes(link)
     const copyMD = copyStyle.value === 'markdown'
     if (copyMD) {
       const mdValue = `![](${link})`
@@ -104,8 +126,7 @@ const handleTPaste = (event) => {
 
 const getCrsfToken = () => {
   const cookie = document.cookie
-  const csrf = cookie.match(/bili_jct=(.+?);/)[1]
-  uploadData.csrf = csrf
+  uploadData.csrf = cookie.match(/bili_jct=(.+?);/)[1]
 }
 
 const getSpaceInfo = () => {
@@ -153,7 +174,7 @@ onMounted(() => {
         当前账号信息
       </Tag>
       <div v-if="nickname" class="layout-items-center">
-        <img :src="face" class="bili-avatar">
+        <img :src="face" class="bili-avatar" alt="">
         <span class="ml-2">{{ nickname }}</span>
         <Tag v-if="mid" class="ml-2" color="#00a1d6">
           {{ mid }}
